@@ -3,6 +3,10 @@ from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
+np.set_printoptions(suppress=True)
+np.set_printoptions(linewidth=300)
+np.set_printoptions(precision=3)
+
 # Load the Iris dataset
 iris = load_iris()
 X, y = iris.data, iris.target
