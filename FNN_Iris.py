@@ -5,7 +5,7 @@ from sklearn.preprocessing import OneHotEncoder
 
 np.set_printoptions(suppress=True)
 np.set_printoptions(linewidth=300)
-np.set_printoptions(precision=3)
+np.set_printoptions(precision=4)
 
 # Load the Iris dataset
 iris = load_iris()
@@ -22,6 +22,12 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 X_train = X_train / np.max(X_train)
 X_test = X_test / np.max(X_test)
 
+input_size = X_train.shape[1]
+epochs = 5000
+learning_rate = 0.002
+hidden_size = 10
+output_size = y_train.shape[1]
+
 class FNN:
     """
     Feedforward Neural Network (FNN) for multi-class classification.
@@ -36,6 +42,7 @@ class FNN:
         :param output_size: Number of classes (neurons) in the output layer.
         :param learning_rate: The step size used for gradient descent optimization.
         """
+        np.random.seed(168)
         self.W1 = np.random.randn(input_size, hidden_size) * 0.01
         self.b1 = np.zeros((1, hidden_size))
         self.W2 = np.random.randn(hidden_size, output_size) * 0.01
@@ -48,7 +55,7 @@ class FNN:
 
     def softmax(self, x):
         """Softmax activation function."""
-        exp_x = np.exp(x - np.max(x, axis=1, keepdims=True))
+        exp_x = np.exp(x)
         return exp_x / np.sum(exp_x, axis=1, keepdims=True)
 
     def relu_derivative(self, x):
@@ -67,14 +74,14 @@ class FNN:
         self.A2 = self.softmax(self.Z2)
         return self.A2
 
-    def backward(self, X, y, output):
+    def backward(self, X, y, y_pred):
         """
         Performs backward propagation to compute gradients for weights and biases.
         :param X: Input feature matrix.
         :param y: True labels (one-hot encoded).
         :param output: Output from the forward pass.
         """
-        error_output = output - y
+        error_output = y_pred - y
         d_W2 = np.dot(self.A1.T, error_output)
         d_b2 = np.sum(error_output, axis=0, keepdims=True)
 
@@ -114,9 +121,9 @@ class FNN:
         :param epochs: Number of iterations to train the network.
         """
         for epoch in range(epochs):
-            output = self.forward(X)
-            loss_value = self.loss(y, output)
-            self.backward(X, y, output)
+            y_pred = self.forward(X)
+            loss_value = self.loss(y, y_pred)
+            self.backward(X, y, y_pred)
 
             if epoch % 200 == 0:
                 print(f"Epoch {epoch}, Loss: {loss_value}")
@@ -131,7 +138,7 @@ class FNN:
         return np.argmax(output, axis=1)
 
 # Create an instance of the neural network
-fnn = FNN(input_size=4, hidden_size=10, output_size=3, learning_rate=0.002)
+fnn = FNN(input_size, hidden_size, output_size, learning_rate)
 fnn.train(X_train, y_train, epochs=5000)
 
 # Test the model
